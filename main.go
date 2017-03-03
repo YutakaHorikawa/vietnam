@@ -14,12 +14,6 @@ func main() {
 	app.Name = "vietmen"
 	app.Usage = "vietmen [command] --port [port number]"
 	app.Action = func(c *cli.Context) {
-		if c.NArg() == 0 {
-			fmt.Println("command not found.")
-			panic(1)
-		}
-		command := c.Args().Get(0)
-		fmt.Println(command)
 		port := c.String("port")
 		startServer(port)
 	}
