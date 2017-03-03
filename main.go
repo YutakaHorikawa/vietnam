@@ -1,23 +1,76 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"net"
 	"os"
+	"time"
+
+	"github.com/urfave/cli"
 )
 
 func main() {
-	fp, err := os.Open("./ac.log")
-	if err != nil {
-		panic("can't open ac.log")
+	app := cli.NewApp()
+	app.Name = "vietmen"
+	app.Usage = "vietmen [command] --port [port number]"
+	app.Action = func(c *cli.Context) {
+		if c.NArg() == 0 {
+			fmt.Println("command not found.")
+			panic(1)
+		}
+		command := c.Args().Get(0)
+		fmt.Println(command)
+		port := c.String("port")
+		startServer(port)
 	}
 
-	defer fp.Close()
-	reader := bufio.NewReaderSize(fp, 4096)
-	t, err := reader.ReadBytes(2)
-	if err != nil {
-		panic("die")
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:  "port",
+			Value: "55555",
+			Usage: "port number for redis server",
+		},
 	}
 
-	fmt.Println(t)
+	app.Run(os.Args)
+
+}
+
+func startServer(port string) {
+	service := ":" + port
+	tcpAddr, err := net.ResolveTCPAddr("tcp", service)
+	checkError(err)
+	listner, err := net.ListenTCP("tcp", tcpAddr)
+	checkError(err)
+	for {
+		conn, err := listner.Accept()
+		if err != nil {
+			continue
+		}
+
+		go handleClient(conn)
+	}
+
+}
+
+func handleClient(conn net.Conn) {
+	defer conn.Close()
+	conn.SetReadDeadline(time.Now().Add(10 * time.Second))
+	fmt.Println("client accept!")
+	messageBuf := make([]byte, 1024)
+	messageLen, err := conn.Read(messageBuf)
+	checkError(err)
+
+	message := string(messageBuf[:messageLen])
+	message = message + " too!"
+
+	conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+	conn.Write([]byte(message))
+}
+
+func checkError(err error) {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "fatal: error: %s", err.Error())
+		os.Exit(1)
+	}
 }
