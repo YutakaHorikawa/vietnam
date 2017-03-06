@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 
@@ -12,6 +13,9 @@ import (
 )
 
 func main() {
+	if runtime.GOOS != "darwin" {
+		panic("It can not be used except osx.")
+	}
 	app := cli.NewApp()
 	app.Name = "vietmen"
 	app.Usage = "vietmen [command] --port [port number]"
