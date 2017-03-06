@@ -70,6 +70,9 @@ func handleClient(conn net.Conn) {
 
 func notify(message string) {
 	notifyData := strings.Split(message, ",")
+	if len(notifyData) < 2 {
+		return
+	}
 	command := "display notification \"" + notifyData[0] + "\" with title " + "\"" + notifyData[1] + "\""
 	cmd := exec.Command("osascript", "-e", command)
 	cmd.Start()
