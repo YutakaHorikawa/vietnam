@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/urfave/cli"
@@ -56,10 +58,17 @@ func handleClient(conn net.Conn) {
 	checkError(err)
 
 	message := string(messageBuf[:messageLen])
-	message = message + " too!"
 
 	conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
-	conn.Write([]byte(message))
+	conn.Write([]byte("ok"))
+	notify(message)
+}
+
+func notify(message string) {
+	notifyData := strings.Split(message, ",")
+	command := "display notification \"" + notifyData[0] + "\" with title " + "\"" + notifyData[1] + "\""
+	cmd := exec.Command("osascript", "-e", command)
+	cmd.Start()
 }
 
 func checkError(err error) {
