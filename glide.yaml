@@ -1,0 +1,4 @@
+package: github.com/YutakaHorikawa/vietnam
+import:
+- package: github.com/urfave/cli
+  version: v1.19.1
